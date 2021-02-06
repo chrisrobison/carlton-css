@@ -1,0 +1,87 @@
+body {
+    margin:0;
+    padding:0;
+    font-size:14px;
+    background-color: #333;
+}
+.dropper {
+    cursor:url(dropper.png) 1 20, pointer;
+}
+header {
+    background-color:#999;
+    color:#eee;
+    height:5vh;
+}
+main {
+    background-color:#333;
+    color:#ddd;
+    height:90vh;
+    display:flex;
+    position:relative;
+    width: 400px;
+    margin: 1em auto;
+}
+footer {
+    background-color:#666;
+    color:#eee;
+    height:5vh;
+}
+.image::after {
+    position:absolute;
+    top :-10px;
+    left:-10px;
+    height:10px;
+    width:10px;
+    content:"";
+}
+.image {
+    display:inline-block;
+    width: 400px;
+    height: 550px;
+    position:absolute;
+    border:1px solid #fff;
+    box-sizing: border-box;
+    display:none;
+}
+#grid {
+    border-collapse: collapse;
+    border: 2px outset #fff;
+    position:relative;
+    z-index:1001;
+    width:400px;
+    box-sizing: border-box;
+    background-color:#ccc;
+}
+#grid td {
+    border-right: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+    box-sizing: border-box;
+    height:10px;
+    width:10px;
+}
+#grid td:hover {
+    background-color: #c00;
+}
+#fgcolor {
+    left:-25px;
+    position:relative;
+    height:44px;
+    z-index:101;
+}
+#bgcolor {
+    height:44px;
+    position:relative;
+    top:-20px;
+    z-index:99;
+}
+a#colorswap {
+    text-decoration:none;
+    color:#fff;
+    position:absolute;
+    top:-10px;
+    left:22px;
+    font-size: 28px;
+    transform: scaleX(.5);
+
+}
+
