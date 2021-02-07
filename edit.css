@@ -12,14 +12,28 @@ header {
     color:#eee;
     height:5vh;
 }
+nav {
+    position:absolute;
+    left:-60px;
+    width:100px;
+}
 main {
-    background-color:#333;
+    position:relative;
+    background-color:#eee;
     color:#ddd;
-    height:90vh;
+    height:560px;
     display:flex;
     position:relative;
     width: 400px;
     margin: 1em auto;
+}
+#bgimage {
+    position:absolute;
+    display:inline-block;
+    z-index:1;
+    
+}
+#tracer {
 }
 footer {
     background-color:#666;
@@ -50,7 +64,7 @@ footer {
     z-index:1001;
     width:400px;
     box-sizing: border-box;
-    background-color:#ccc;
+    background-color:transparent;
 }
 #grid td {
     border-right: 1px solid #fff;
