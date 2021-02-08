@@ -20,6 +20,9 @@
         </nav>
         <div id='image' class='image'></div>
         <div id='bgimage' class='bgimage'></div>
+        <div id='imageList'>
+            <label for='images'>Images</label><br><select size="13" id='images'></select>
+        </div>
     </main>
     <footer>
     </footer>
@@ -35,7 +38,19 @@
         (function() {
             const app = {
                 init: function() {
-                    app.state.loaded = true;
+                    fetch("img.json").then(response=>response.json()).then(data=>{
+                        app.state.images = data;
+                        app.state.loaded = true;
+
+                        for (let i=0; i< data.length; i++) {
+                            let opt = document.createElement('option');
+                            opt.value = "Image " + (i + 1);
+                            opt.text = opt.value;
+                            $("#images").appendChild(opt);
+                        }
+                        app.state.currentImage = 0;
+                        app.loadImage(app.state.images[0]);
+                    });
                     let out = "<table id='grid'>";
                     for (let r = 0; r <= 55; r++) {
                         out += "<tr>";
@@ -67,9 +82,23 @@
                     $("#grid").addEventListener("mouseup", app.doUp);
                     $("#grid").addEventListener("contextmenu", app.doContext);
                     $("#bgfile").addEventListener("change", app.doFile);
+                    $("#images").addEventListener("change", app.switchImage);
 
                     document.onkeydown = app.doKeydown;
                     document.onkeyup = app.doKeyup;
+                },
+                switchImage: function() {
+                    app.state.currentImage = this.selectedIndex;
+                    let selected = app.state.images[this.selectedIndex];
+                    app.loadImage(app.state.images[app.state.currentImage]);
+                },
+                loadImage: function(img) {
+                    for (let y=0; y<img.length; y++) {
+                        for (let x=0; x<img[y].length; x++) {
+                            let c = img[y][x] || "transparent";
+                            $(`#r${y}c${x}`).style.backgroundColor = c;
+                        }
+                    }
                 },
                 doKeydown: function(e) {
                     if (e.key === "Alt") {
@@ -94,10 +123,10 @@
                     if (!e.altKey) {
                         e.target.style.backgroundColor = color;
                         const [x, y] = app.getCoord(e.target.id);
-                        app.state.image[y][x] = color;
+                        app.state.images[app.state.currentImage][y][x] = color;
                     } else if (e.altKey && e.target.id.match(/^r(\d+)/)) {
                         const [x, y] = app.getCoord(e.target.id);
-                        $("#fgcolor").value = app.state.image[y][x];
+                        $("#fgcolor").value = app.state.images[app.state.currentImage][y][x];
                     }
                     app.state.drawing = true;
                     $("#grid").addEventListener("mousemove", app.doMove);
@@ -108,7 +137,7 @@
                 doUp: function(e) {
                     if ((1 == 0) && e.altKey && e.target.id.match(/^r(\d+)/)) {
                         const [x, y] = app.getCoord(e.target.id);
-                        $("#fgcolor").value = app.state.image[y][x];
+                        $("#fgcolor").value = app.state.images[app.state.currentImage][y][x];
                     }
                     $("#grid").removeEventListener("mousemove", app.doMove);
                     app.state.drawing = false;
@@ -118,7 +147,7 @@
                         if (e.target.id.match(/^r\d+/)) {
                             let color = $("#fgcolor").value;
                             const [x, y] = app.getCoord(e.target.id);
-                            app.state.image[y][x] = color;
+                            app.state.images[app.state.currentImage][y][x] = color;
                             e.target.style.backgroundColor = color;
                         }
                     }
