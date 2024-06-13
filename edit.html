@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+        :root {
+            --rows: 55;
+            --columns: 40;
+            --currentColor: #000000;
+            --color-0: #000000;
+            --color-1: #000000;
+            --color-2: #000000;
+            --color-3: #000000;
+            --color-4: #000000;
+            --color-5: #000000;
+            --color-6: #000000;
+            --color-7: #000000;
+            --color-8: #000000;
+            --color-9: #000000;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: "Lexend", "Helvetica Neue", "Helvetica", sans-serif;
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            background-color:#333;
+            height: 100vh;
+            width: 100vw;
+            counter-reset: imgs;
+        }
+
+        header {
+            background-color: #999;
+            color: #eee;
+            height: 0vh;
+        }
+
+        main {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+        }
+        .frames {
+            width: 100vw;
+            height: 20vh;
+            overflow-x: auto;
+            padding:0;
+            margin:0;
+            display: flex;
+            justify-content: space-around;
+        }
+        #editor {
+            border-collapse: collapse;
+        }
+        #editor .pixel {
+            width: calc(80vh / 55);
+        }
+        #editor td {
+            outline: 1px solid #fff3;
+        }
+        footer {
+            background-color: #666;
+            color: #eee;
+            height: 20vh;
+        }
+
+        li {
+            display: flex;
+            flex-direction: row;
+            white-space: nowrap;
+        }
+        .pixel {
+            display: inline-block;
+            height: calc(80vh / 55);
+            width: calc(80vh / 55);
+            padding: 0;
+            margin: 0;
+            border-right: 1px solid #0009;
+            border-bottom: 1px solid #0009;
+        }
+        table.img {
+            border-collapse: collapse;
+        }
+        table.img td {
+            padding: 0;
+            margin: 0;
+        }
+        .tinypixel {
+            display: flex;
+            height: 1px;
+            width: 1px;
+        }
+        .preview > div {
+            height: 1px;
+            width: 1px;
+            display: inline-block;
+            padding: 0;
+            margin: 0;
+        }
+        .row {
+            height: calc(80vh / 55);
+        }
+        #editor {
+            background-color: #fff6;
+            display: grid;
+            grid-template-columns: repeat(var(--columns), 1fr);
+            grid-gap: 0;
+            cursor: none;
+        }
+        img.image-frame {
+            width: 80px;
+            border: 1px solid #0003;
+            margin: 0.5rem;
+            list-style: none;
+            margin:0;
+            padding:0;
+        }
+        input#bg {
+            height: 2rem;
+            width: 2rem;
+            block-size: 3rem;
+            padding: 0;
+            outline: 0;
+            border: 0;
+            position: relative;
+            left: -30%;
+            top: 1rem;
+        }
+        #palette {
+            width: 5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            border: 2px outset #aaa;
+            background-color: #666;
+            padding: 5px 0;
+        }
+        .palette-color {
+            width: 2rem;
+            height: 2rem;
+            border: 1px solid #fff6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #ccc;
+            padding:0;
+            border-right: 1px solid #0009;
+            border-bottom: 1px solid #0009;
+
+        }
+        input[type="color"] {
+            border: 0px;
+            height: 2rem;
+            width: 2rem;
+            padding: 0;
+        }
+        .palette-color a {
+            text-decoration: none;
+            color: #fff;
+            text-shadow: -1px -1px 1px #0007;
+        }
+        .toolbar-titlebar {
+            height: 13px;
+            background-color: #06b;
+            color: #fff;
+            font-size: 10px;
+            width: 100%;
+            position: relative;
+        }
+        .toolbar-titlebar:before {
+            content: " ";
+            background: #fff;
+            /* background: radial-gradient(circle, rgba(183,255,192,1) 0%, rgba(26,205,32,1) 30%, rgba(51,146,54,1) 66%, rgba(37,83,40,1) 100%); */
+            background: radial-gradient(circle, rgba(183,240,255,1) 0%, rgba(0,172,255,1) 42%, rgba(51,94,146,1) 82%, rgba(37,62,83,1) 100%);
+            border-radius: 50%;
+            height: 7px;
+            width: 7px;
+            display: inline-block;
+            position: relative;
+            border: 1px solid #0009;
+            margin-right: 0.25em;
+            margin-left: 0.25em;
+        }
+        .toolbar-titlebar:after {
+            position: absolute;
+            right: 2px;
+            transform: scaleY(0.75);
+            display: inline-block;
+            content: "▼";
+        }
+        .toolbar {
+            background-color: #aaa;
+        }
+        img.image-frame:hover {
+            border: 1px solid #9cf;
+        }
+        .color-button {
+            border: 0px;
+            height: 3rem;
+            width: 2rem;
+        }
+        .selected-color {
+            outline: 2px dotted #ff0;
+            outline-offset: -5px;
+        }
+        #editor div.pixel:hover {
+            background: var(--currentColor) !important;
+        }
+        label.color-button {
+            display: inline-block;
+            height: 3rem;
+            width: 2rem;
+            text-align: center;
+            position: relative;
+            padding-top: 0.25rem;
+        }
+        #brushSizePreview {
+            display: inline-block;
+            height: 2px;
+            width: 2px;
+            background: #000;
+        }
+        .toolbar {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #brushSizePreviewWrap {
+            display: flex;
+            height: 32px;
+            width: 32px;
+            border: 1px solid #000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+        }
+        .pixel.brush { 
+            background-color: var(--currentColor) !important;
+        }
+        input[type="number"] {
+            text-align: center;
+        }
+        .image-frame::before {
+            counter-increment: imgs;
+            content: counter(imgs) ".";
+            color: #fff;
+            
+        }
+        img.image-frame.selected {
+            border: 2px solid #09c;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <div class="toolbar">
+        <div class="toolbar-titlebar">Colors</div>
+        <div id="palette"></div>
+    </div>
+    <div id="editor"></div>
+    <div id="colors" class="toolbar">
+        <div class="toolbar-titlebar">Brush</div>
+        <div id="brushSizePreviewWrap">
+            <div id="brushSizePreview"></div>
+        </div>
+        <input type="number" min="1" max="15" id="brush-size" oninput="app.changeBrushSize(this.value)" value="1" /> 
+        <input value="1" style="width:4rem" type="range" min='1' max='15' id="brush-range" name="brush-range" oninput="app.changeBrushSize(this.value)" />
+    </div>
+</main>
+<footer><ul class="frames"></ul></footer>
+<script>
+(function() {
+    const $ = str => document.querySelector(str);
+    const $$ = str => document.querySelectorAll(str);
+
+    const app = {
+        data: {},
+        state: {
+            brushSize: 1,
+            height: 55,
+            width: 40,
+            loaded: false
+        },
+        frame: [],
+        frames: [],
+        images: [],
+        init() {
+            let rect = $("main").getBoundingClientRect();
+            let pixelW = pixelH = rect.height / 54;
+            
+            $("#editor").addEventListener("mousedown", app.mouseDown);
+            $("#editor").addEventListener("mouseover", app.mouseOver);
+            
+            document.addEventListener("keydown", app.keyDown);
+            document.addEventListener("contextmenu", evt => { evt.preventDefault() } );
+            
+            fetch("style.css").then(r=>r.text()).then(data=>{
+                let lines = data.split(/\n/);
+                let m, currentFrame=0, parts;
+                for (let i=0; i<lines.length; i++) {
+                    if (m = lines[i].match(/^.dance-animation--dancer(\d+)/)) {
+                        currentFrame = m[1];
+                    }
+                    if (m = lines[i].match(/box\-shadow:\s(.+?);/)) {
+                        parts = m[1].split(/,\s*/);
+
+                        if (parts) {
+                            let frame = []
+                            let colors = [];
+                            for (let j=0; j<parts.length; j++) {
+                                //console.log(parts);
+                                let p = parts[j].split(/\s/);
+                                let x = parseInt(p[0].replace(/\D/g, '')) / 10;
+                                let y = parseInt(p[1].replace(/\D/g, '')) / 10;
+                                let c = p[2];
+                                colors[c] = c;
+                                //console.log(`c: ${p[0]} x: ${x} y: ${y}`);
+
+                                let px = {
+                                    x: x,
+                                    y: y,
+                                    c: c
+                                }
+                                if (!frame[y-1]) frame[y-1] = [];
+                                frame[y-1][x-1] = px;
+                            }
+                            app.frames[currentFrame] = frame;
+                            app.palette = Object.keys(colors);
+                            app.renderPalette(app.palette);
+                        }
+                    }
+                }
+                console.dir(app.frames);
+                app.frames.shift();
+                let out = app.renderEditor(app.frames[0]);
+                app.currentFrame = 0;
+                $("#editor").innerHTML = out;
+                app.renderFrames();
+            });
+            
+            app.state.loaded = true;
+            
+        },
+        mouseDown(evt) {
+            if (evt.target.classList.contains("pixel") && app.currentColor) {
+                let info = evt.target.dataset;
+                let newcolor = app.currentColor;
+                app.originalColor = app.currentColor;
+                
+                if (evt.button === 2) {
+                    newcolor = "transparent";
+                    app.currentColor = "transparent";
+                }
+                app.state.mousedown = app.currentColor;
+                app.frames[app.currentFrame][info.y][info.x].c = newcolor;
+                evt.target.style.backgroundColor = newcolor;
+                app.stroke(info.x, info.y);
+                app.renderPreview(app.currentFrame, app.frames[app.currentFrame], 'tinypixel');
+                document.addEventListener("mousemove", app.mouseMove);
+                document.addEventListener("mouseup", app.mouseUp);
+                evt.stopPropagation();
+                evt.preventDefault();
+                return false;
+            }
+        },
+        mouseMove(evt) {
+            if (evt.target.classList.contains("pixel") && app.state.mousedown) {
+                let info = evt.target.dataset;
+
+                app.frames[app.currentFrame][info.y][info.x].c = app.currentColor;
+                evt.target.style.backgroundColor = app.currentColor;
+                
+                if (app.state.brushSize > 1) {
+                    app.stroke(info.x, info.y, app.currentColor);
+                }
+                app.renderPreview(app.currentFrame, app.frames[app.currentFrame], 'tinypixel');
+            }
+        },
+        mouseUp(evt) {
+            app.state.lastPixel = [evt.x, evt.y];
+
+            document.removeEventListener("mousemove", app.mouseMove);
+            document.removeEventListener("mouseup", app.mouseUp);
+            if (app.originalColor) {
+                app.currentColor = app.originalColor;
+            }
+            app.state.mousedown = false;
+            evt.preventDefault();
+            evt.stopPropagation();
+            return false;
+        },
+        mouseOver(evt) {
+            let tgt = evt.target;
+                    
+            $$(".brush").forEach(el => el.classList.remove("brush"));
+
+            if (tgt.classList.contains("pixel") && app.currentColor) {
+                if (app.state.brushSize > 1) {
+                    let info = evt.target.dataset;
+                    
+                    for (let h=0; h < app.state.brushSize; h++) {
+                        for (let w=0; w < app.state.brushSize; w++) {
+                            $(`#pixel_${Math.min(app.state.height-1, parseInt(info.y) + h)}_${Math.min(app.state.width-1, parseInt(info.x) + w)}`).classList.add('brush');
+                        }
+                    }
+                }
+            }
+        },
+        stroke(x, y, color) {
+            color = color ? color : app.currentColor;
+            for (let h=0; h < app.state.brushSize; h++) {
+                for (let w=0; w < app.state.brushSize; w++) {
+                    let newy = Math.min(app.state.height-1, parseInt(y) + h);
+                    let newx = Math.min(app.state.width-1, parseInt(x) + w);
+                    
+                    app.frames[app.currentFrame][newy][newx].c = color;
+
+                    let el = $(`#pixel_${newy}_${newx}`);
+                    el.style.backgroundColor = color;
+                    el.dataset.color = color;
+                }
+            }
+ 
+        },
+        colorClick(evt) {
+            console.log("colorClick");
+            console.dir(evt);
+            return false;
+        },
+        renderPalette(pal) {
+            if (pal) {
+                let seen = {};
+                $("#palette").innerHTML = "";
+                let cnt = 0;
+                for (const color of pal) {
+                    if (!seen[color]) {
+                        let el = document.createElement("div");
+                        el.dataset.color = color;
+                        el.id = `color-${color.replace(/\W/g,'')}`;
+                        el.className = 'palette-color';
+                        el.style.backgroundColor = color;
+                        el.title = color;
+                        el.innerHTML = `<button class="color-button" style="background-color: ${color}" id='#color-${cnt}}' onclick="app.selectColor(event, '${color}', this);return false;">`;
+                        $("#palette").append(el);
+                        ++cnt;
+                        seen[color] = color;
+                    }
+                }
+                app.palette = Object.keys(seen);
+                let therest = 16 - pal.length;
+
+                for (let i=0; i < therest; i++) {
+                        let el = document.createElement("div");
+                        el.dataset.color = "transparent";
+                        el.id = `color-${i + cnt}`;
+                        el.className = 'palette-color';
+                        el.style.backgroundColor = "transparent";
+                        el.title = "transparent";
+                        el.innerHTML = `<label class="color-button" > + <input type="color" id='#color-${i + cnt}' name="#color-${i + cnt}" oninput="app.previewColor(this.value, ${i + cnt})" onchange="app.addColor(this.value, ${i + cnt})" style="display:none"></label>`;
+                        $("#palette").append(el);
+                        app.palette.push("#000000");
+                }
+            }
+
+        },
+        renderFrames() {
+            let container = $(".frames");
+            let cnt = 0;
+            for (let frame of app.frames) {
+                if (frame) app.renderPreview(cnt, frame, 'tinypixel');
+                cnt++;
+            }
+        },
+        renderPreview(idx, img, h=2, w=2) {
+            let id = 'frame-' + idx;
+            let out = "";
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            
+            canvas.setAttribute("height", 55 * 2);
+            canvas.setAttribute("width", 40 * w);
+            canvas.height = 110;
+            canvas.width = 80;
+
+            for (let y=0; y<img.length; y++) {
+
+                for (let x=0; x<img[y].length; x++) {
+                    ctx.fillStyle = img[y][x].c;
+                    ctx.fillRect(x * w, y * 2, w, 2);
+
+                }
+            }
+            
+            let newimgURL = canvas.toDataURL("image/png");
+            const newimg = new Image();
+            newimg.className = 'image-frame'
+            newimg.src = newimgURL;
+            newimg.id = id;
+            newimg.addEventListener("click", function(evt) {
+                let out = app.renderEditor(img);
+                $("#editor").innerHTML = out;
+                app.currentFrame = idx;
+                $$("img.selected").forEach(el => { el.classList.remove("selected") });
+                newimg.classList.add("selected");
+            });
+
+            app.images[id] = newimg;
+            
+            let newli = document.createElement("li");
+            newli.className = "image-frame";
+            newli.append(newimg);
+
+            if ($(`#${id}`)) {
+                $(`#${id}`).replaceWith(newimg); 
+            } else {
+                $(".frames").append(newli);
+            }
+       },
+       renderEditor(img, pixelClass='pixel') {
+            let out = ""; // "<div class='img'>";
+            for (let y=0; y<img.length; y++) {
+                // out += "<div class='row'>";
+                for (let x=0; x<img[y].length; x++) {
+                    out += `<div id="pixel_${y}_${x}" data-color="${img[y][x].c}" data-x="${x}" data-y="${y}" class='${pixelClass}' style='background:${img[y][x].c};'></div>`;
+                }
+                // out += "</div>";
+            }
+            // out += "</div>";
+            return out;
+        },
+        fetch(url, callback) {
+            fetch(url).then(response=>response.json()).then(data=>{
+                app.data = data;
+                app.state.loaded = true;
+                if (callback && typeof(callback) === "function") {
+                    callback(data);
+                }
+            });
+        },
+        changeColor(evt, color, el) {
+
+        },
+        display(data, tgt) {
+            let out = "<table><thead><tr>";
+            const keys = Object.keys(data[0]);
+            if (keys) {
+                keys.forEach(key => {
+                    out += `<th>${key}</th>`;
+                });
+            }
+            out += "</tr></thead><tbody>";
+            data.forEach(item=>{
+                out += `<tr>`;
+                keys.forEach(key => {
+                    out += `<td>${item[i]}</td>`;
+                });
+                out += `</tr>`;
+            });
+            out += "</tbody></table>";
+
+            if (tgt) {
+                tgt.innerHTML = out;
+            }
+            return out;
+        },
+        selectColor(evt, color, who) {
+            $(".selected-color")?.classList.remove("selected-color");
+            who.classList.add("selected-color");
+            
+            let r = $(":root");
+            r.style.setProperty("--currentColor", color);
+            app.currentColor = color;
+        },
+        pickColor(evt, who) {
+            console.log(`pickColor`);
+            console.dir(evt);
+
+            let picker = document.createElement("input");
+            picker.type = "color";
+            picker.id = "picker";
+            picker.addEventListener("input", app.changeColor);
+
+            who.parentElement.appendChild(picker);
+            // app.currentColor = color;
+        },
+        previewColor(color, pnum) {
+            app.palette[pnum] = color;
+            $(`#color-${pnum}`).style.backgroundColor = color;
+        },
+        addColor(color, pnum) {
+            app.palette[pnum] = color;
+            let out = `<button class="color-button selected-color" style="background-color: ${color}" id="#color-${pnum}}" onclick="app.selectColor(event, '${color}', this);return false;"></button>`
+            $(`#color-${pnum}`).innerHTML = out;
+        },
+        changeBrushSize(size) {
+            if (size) {
+                $("#brush-size").value = size;
+                $("#brush-range").value = size;
+            }
+            $("#brushSizePreview").style.height = size * 2 + 'px';
+            $("#brushSizePreview").style.width = size * 2 + 'px';
+
+            app.state.brushSize = size;
+        }
+    }
+    window.app = app;
+    app.init();
+})();
+</script>
+</body>
+
+</html>
