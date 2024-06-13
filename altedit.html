@@ -1,0 +1,236 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>CSS Pixel Image Editor</title>
+    <link rel="stylesheet" href="edit.css">
+</head>
+
+<body id="home">
+    <header>
+        <label for='bgfile'>Trace Image:</label> <input type='file' id='bgfile'><button>Add</button>
+    </header>
+    <main>
+        <nav>
+            <div>
+                <input type='color' id='fgcolor' value='#000000'><a onclick='app.swapColors()' href='#' id='colorswap'><span id='colorswap1'>⇋</span></a>
+                <input type='color' id='bgcolor' value='#ff0000'>
+            </div>
+        </nav>
+        <div id='image' class='image'></div>
+        <div id='bgimage' class='bgimage'></div>
+        <div id='imageList'>
+            <label for='images'>Images</label><br><select size="13" id='images'></select>
+            <br clear="left">
+            <a id='play' href='#play'>⏯</a>
+        </div>
+    </main>
+    <footer>
+    </footer>
+    <script>
+        function $(str) { return document.querySelector(str); }
+        function $$(str) { return document.querySelectorAll(str); }
+
+        (function() {
+            const app = {
+                init: function() {
+                    fetch("img.json").then(response=>response.json()).then(data=>{
+                        app.state.images = data;
+                        app.state.loaded = true;
+
+                        for (let i=0; i< data.length; i++) {
+                            let opt = document.createElement('option');
+                            opt.value = "Image " + (i + 1);
+                            opt.text = opt.value;
+                            $("#images").appendChild(opt);
+                        }
+                        app.state.currentImage = 0;
+                        app.loadImage(app.state.images[0]);
+                        $("#images").selectedIndex = 0;
+                    });
+                    let out = "<table id='grid'>";
+                    for (let r = 0; r <= 55; r++) {
+                        out += "<tr>";
+                        for (let c = 0; c <= 40; c++) {
+                            out += `<td id='r${r}c${c}' class='cell'></td>`;
+                        }
+                        out += "</tr>\n";
+                    }
+                    out += "</table>";
+                    $("main").innerHTML += out;
+
+                    $("#grid").addEventListener("mousedown", app.doDown);
+                    $("#grid").addEventListener("mouseup", app.doUp);
+                    $("#grid").addEventListener("contextmenu", app.doContext);
+                    $("#bgfile").addEventListener("change", app.doFile);
+                    $("#images").addEventListener("change", app.switchImage);
+                    $("#play").addEventListener("mousedown", app.togglePlay);
+                    $("#play").addEventListener("mouseup", app.doPlay);
+
+                    document.onkeydown = app.doKeydown;
+                    document.onkeyup = app.doKeyup;
+                },
+                doPlay: function() {
+                    this.style.marginTop = "0px";
+                },  
+                togglePlay: function() {
+                    this.style.marginTop = "3px";
+                    app.state.running ^= 1;
+
+                    if (app.state.running) {
+                        setTimeout(function() { app.nextImage(); }, 100);
+                    }
+                },
+                switchImage: function() {
+                    app.state.currentImage = this.selectedIndex;
+                    let selected = app.state.images[this.selectedIndex];
+                    app.loadImage(app.state.images[app.state.currentImage]);
+                },
+                loadImage: function(img) {
+                    for (let y=0; y<img.length; y++) {
+                        for (let x=0; x<img[y].length; x++) {
+                            let c = img[y][x] || "transparent";
+                            $(`#r${y}c${x}`).style.backgroundColor = c;
+                        }
+                    }
+                },
+                nextImage: function() {
+                    app.state.currentImage++;
+                    if (app.state.currentImage > app.state.images.length - 1) {
+                        app.state.currentImage = 0;
+                    }
+                    $("#images").selectedIndex = app.state.currentImage;
+                    app.switchImage.apply($("#images"));
+
+                    if (app.state.running) {
+                        setTimeout(function() { app.nextImage(); }, 100);
+                    }
+                },
+                doKeydown: function(e) {
+                    if (e.key === "Alt") {
+                        $("body").classList.add("dropper");
+                    }
+                },
+                doKeyup: function(e) {
+                    $("body").classList.remove("dropper");
+                },
+                doContext: function(e) {
+                    e.preventDefault();
+                    return false;
+                },
+                doDown: function(e) {
+                    console.dir(e);
+                    let color;
+                    if ((e.buttons === 2) || ((e.buttons === 1) && (e.ctrlKey === true))) {
+                        color = $("#bgcolor").value;
+                    } else {
+                        color = $("#fgcolor").value;
+                    }
+                    if (!e.altKey) {
+                        e.target.style.backgroundColor = color;
+                        const [x, y] = app.getCoord(e.target.id);
+                        app.state.images[app.state.currentImage][y][x] = color;
+                    } else if (e.altKey && e.target.id.match(/^r(\d+)/)) {
+                        const [x, y] = app.getCoord(e.target.id);
+                        $("#fgcolor").value = app.state.images[app.state.currentImage][y][x];
+                    }
+                    app.state.drawing = true;
+                    $("#grid").addEventListener("mousemove", app.doMove);
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return false;
+                },
+                doUp: function(e) {
+                    if ((1 == 0) && e.altKey && e.target.id.match(/^r(\d+)/)) {
+                        const [x, y] = app.getCoord(e.target.id);
+                        $("#fgcolor").value = app.state.images[app.state.currentImage][y][x];
+                    }
+                    $("#grid").removeEventListener("mousemove", app.doMove);
+                    app.state.drawing = false;
+                },
+                doMove: function(e) {
+                    if (app.state.drawing) {
+                        if (e.target.id.match(/^r\d+/)) {
+                            let color = $("#fgcolor").value;
+                            const [x, y] = app.getCoord(e.target.id);
+                            app.state.images[app.state.currentImage][y][x] = color;
+                            e.target.style.backgroundColor = color;
+                        }
+                    }
+                },
+                getCoord: function(id) {
+                    let parts = id.split(/\D/);
+                    parts.shift();
+                    parts.reverse();
+                    return parts;
+                },
+                store: {
+                    set: function(key, val) {
+                        localStorage.setItem(key, JSON.stringify(val));
+                    },
+                    get: function(key) {
+                        let txt = localStorage.getItem(key);
+                        if (txt) {
+                            return JSON.parse(txt);
+                        } else {
+                            return false;
+                        }
+                    }
+                },
+                doFile: function(e) {
+                    console.log("doFile");
+                    console.dir(e);
+                    console.dir(this);
+                    
+                    const file = this.files[0];
+                    let img = $("#tracer") || document.createElement('img');
+                                       
+                    img.id = "tracer";
+                    img.classList.add('obj');
+                    img.file = file;
+                    $("#bgimage").appendChild(img);
+
+                    const reader = new FileReader();
+                    reader.onload = (function(imga) { return function(e) { imga.src = e.target.result; }; })(img);
+                    reader.readAsDataURL(file);
+                },
+                processFiles: function(files) {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+
+                        if (!file.type.startsWith('image/')) {
+                            continue
+                        }
+
+                        const img = document.createElement("img");
+                        img.classList.add("obj");
+                        img.file = file;
+                        preview.appendChild(img); // Assuming that "preview" is the div output where the content will be displayed.
+
+                        const reader = new FileReader();
+                        reader.onload = (function(aImg) {
+                            return function(e) {
+                                aImg.src = e.target.result;
+                            };
+                        })(img);
+                        reader.readAsDataURL(file);
+                    }
+                },
+                swapColors: function() {
+                    let fg = $("#fgcolor").value;
+                    let bg = $("#bgcolor").value;
+                    $("#fgcolor").value = bg;
+                    $("#bgcolor").value = fg;
+                    return false;
+                },
+                state: {
+                    loaded: false,
+                    image: []
+                },
+                config: {
+                }
+            }
+            window.app = app;
+            app.init();
+        })();
+    </script>
