@@ -45,7 +45,7 @@
         main {
             display: flex;
             flex-direction: row;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             width: 100vw;
         }
@@ -62,17 +62,43 @@
             border-collapse: collapse;
         }
         #editor .pixel {
-            width: calc(80vh / 55);
+            width: calc(75vh / 55);
         }
         #editor td {
             outline: 1px solid #fff3;
         }
         footer {
-            background-color: #666;
+            background-color: #ccc;
             color: #eee;
-            height: 20vh;
+            height: 22vh;
+            position: relative;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 15.812 18.636' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3C/defs%3E%3Crect x='0.524' y='0.871' width='15.234' height='17.256' style='stroke-width: 0.029; fill: rgba(255, 255, 255, 0.494);'%3E%3C/rect%3E%3Cg transform='matrix(0.237414, 0, 0, 0.237414, -67.867891, -38.29963)'%3E%3Cdefs%3E%3C/defs%3E%3Cg transform='translate(955.56 120.41)'%3E%3Cpath d='M 29.103 161.653 L 29.252 239.815 L 95.704 239.124 L 95.706 161.32 L 29.103 161.653 Z M 55.919 187.566 L 67.169 187.566 C 70.648 187.566 73.45 190.368 73.45 193.848 L 73.45 209.879 C 73.45 213.358 70.648 216.16 67.169 216.16 L 55.919 216.16 C 52.439 216.16 49.638 213.358 49.638 209.879 L 49.638 193.848 C 49.638 190.368 52.439 187.566 55.919 187.566 Z' style='' transform='translate(-698.8 -120.41)'%3E%3C/path%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-size: 15px 18px;
+            background-repeat: repeat-x;
+            background-position-y: bottom;
+            background-position-x: 6px;
+        }
+        footer.running {
+            animation: rollingTop 250ms steps(10, start) infinite;
         }
 
+        footer:before {
+            content: " ";
+            position: absolute;
+            top: -18px;
+            height: 18px;
+            width: 100vw;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 15.812 18.636' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3C/defs%3E%3Crect x='0.524' y='0.871' width='15.234' height='17.256' style='stroke-width: 0.029; fill: rgba(255, 255, 255, 0.494);'%3E%3C/rect%3E%3Cg transform='matrix(0.237414, 0, 0, 0.237414, -67.867891, -38.29963)'%3E%3Cdefs%3E%3C/defs%3E%3Cg transform='translate(955.56 120.41)'%3E%3Cpath d='M 29.103 161.653 L 29.252 239.815 L 95.704 239.124 L 95.706 161.32 L 29.103 161.653 Z M 55.919 187.566 L 67.169 187.566 C 70.648 187.566 73.45 190.368 73.45 193.848 L 73.45 209.879 C 73.45 213.358 70.648 216.16 67.169 216.16 L 55.919 216.16 C 52.439 216.16 49.638 213.358 49.638 209.879 L 49.638 193.848 C 49.638 190.368 52.439 187.566 55.919 187.566 Z' style='' transform='translate(-698.8 -120.41)'%3E%3C/path%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-size: 15px 18px;
+            background-repeat: repeat-x;
+            background-position-x: 6px;
+        }
+        footer.running:before {
+            animation: rolling 250ms steps(19, start) infinite;
+        }
+        .frames {
+            background-color: #000;
+        }
         li {
             display: flex;
             flex-direction: row;
@@ -80,8 +106,8 @@
         }
         .pixel {
             display: inline-block;
-            height: calc(80vh / 55);
-            width: calc(80vh / 55);
+            height: calc(75vh / 55);
+            width: calc(75vh / 55);
             padding: 0;
             margin: 0;
             border-right: 1px solid #0009;
@@ -116,9 +142,12 @@
             grid-gap: 0;
             cursor: none;
         }
+        li.image-frame {
+            background: #fff6;
+            height: 19vh;
+        }
         img.image-frame {
             width: 80px;
-            border: 1px solid #0003;
             margin: 0.5rem;
             list-style: none;
             margin:0;
@@ -197,6 +226,12 @@
             transform: scaleY(0.75);
             display: inline-block;
             content: "▼";
+            transition: all 125ms linear;
+            transform: rotate(0deg);
+        }
+        .toolbar.hide .toolbar-titlebar:after {
+            transform: rotate(-90deg);
+
         }
         .toolbar {
             background-color: #aaa;
@@ -233,8 +268,13 @@
         .toolbar {
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
+            overflow: hidden;
+            transition: all 125ms linear;
+        }
+        .toolbar.hide {
+            height: 13px !important;
         }
         #brushSizePreviewWrap {
             display: flex;
@@ -255,19 +295,80 @@
         .image-frame::before {
             counter-increment: imgs;
             content: counter(imgs) ".";
-            color: #fff;
+            color: #fff9;
+            font-size: 10px;
+            position: relative;
+            left: -1em;
             
+        }
+        li.image-frame {
+            border-radius: 0.25em;
         }
         img.image-frame.selected {
             border: 2px solid #09c;
+        }
+        #controls {
+            text-align: center;
+        }
+        #controls > button {
+            width: 1.25em;
+            padding:0;
+            height: 1.4em;
+            line-height: 1;
+            background: #ccc;
+            border: 0;
+            transition: all 150ms linear;
+            transform: scale(1);
+        }
+        #controls > button:hover {
+            background: #ddd;
+            transform: scale(1.1);
+        }
+        #controls label {
+            font-size: 10px;
+        }
+        #controls input[type="number"] {
+            width: 4em;
+            font-size: 10px;
+            text-align: right;
+        }
+        #tools-colors {
+            height: 283px;
+        }
+        #tools-preview {
+            height: 160px;
+        }
+        #colors {
+            height: 86px;
+        }
+        @keyframes rolling {
+            to {
+                background-position-x: 36px;
+            }
+        }
+        @keyframes rollingTop {
+            to {
+                background-position-x: 36px;
+            }
         }
     </style>
 </head>
 <body>
 <main>
-    <div class="toolbar">
-        <div class="toolbar-titlebar">Colors</div>
-        <div id="palette"></div>
+    <div class="tools">
+        <div id="tools-colors" class="toolbar">
+            <div class="toolbar-titlebar">Colors</div>
+            <div id="palette"></div>
+        </div>
+        <div id="tools-preview" class="toolbar">
+            <div class="toolbar-titlebar">Preview</div>
+                <img id="previewImg" width="80" height="110" >
+            <div id="controls">
+                <button onclick="app.animate('first'); return false;">&#x23EE;&#xFE0E;</button><button onclick="app.animate('prev'); return false;">&#x23EA;&#xFE0E;</button><button id="play-button" onclick="app.animate('play'); return false;">&#x23F5;&#xFE0E;</button><button id="pause-button" style="display:none;" onclick="app.animate('pause'); return false;">&#x23F8;&#xFE0E;</button><button onclick="app.animate('next'); return false;">&#x23E9;&#xFE0E;</button><button onclick="app.animate('last'); return false;">&#x23ED;&#xFE0E;</button><br>
+                <label for="rate">delay</label> <input type="number" step="10" min="0" id="rate" value="100" oninput="app.state.frameRate=this.value">
+            </div>
+        </div>
+ 
     </div>
     <div id="editor"></div>
     <div id="colors" class="toolbar">
@@ -288,6 +389,7 @@
     const app = {
         data: {},
         state: {
+            frameRate: 100,
             brushSize: 1,
             height: 55,
             width: 40,
@@ -305,7 +407,10 @@
             
             document.addEventListener("keydown", app.keyDown);
             document.addEventListener("contextmenu", evt => { evt.preventDefault() } );
-            
+            $$(".toolbar-titlebar").forEach(el=>{ el.addEventListener("click", function(evt) {
+                let con = evt.target.closest(".toolbar");
+                con.classList.toggle("hide");
+            })});
             fetch("style.css").then(r=>r.text()).then(data=>{
                 let lines = data.split(/\n/);
                 let m, currentFrame=0, parts;
@@ -344,15 +449,68 @@
                 }
                 console.dir(app.frames);
                 app.frames.shift();
-                let out = app.renderEditor(app.frames[0]);
                 app.currentFrame = 0;
-                $("#editor").innerHTML = out;
                 app.renderFrames();
+                app.selectFrame(0);
+                
             });
             
             app.state.loaded = true;
             
         },
+        play() {
+            if (app.state.playing) {
+                app.state.playFrame++;
+                if (app.state.playFrame >= app.frames.length) {
+                    app.state.playFrame = 0;
+                }
+                $("#editor").innerHTML = app.renderEditor(app.frames[app.state.playFrame]);
+                $("#previewImg").src = $(`#frame-${app.state.playFrame}`).src;
+                $$("img.selected").forEach(el => { el.classList.remove("selected") });
+                $(`#frame-${app.state.playFrame}`).classList.add("selected");
+
+                app.state.timeout = setTimeout(function() { app.play(); }, app.state.frameRate);
+            }
+
+        },
+        animate(action) {
+            switch(action) {
+                case "play":
+                    app.state.playing = true;
+                    app.state.playFrame = app.currentFrame;
+                    app.play();
+                    $("#play-button").style.display = "none";
+                    $("#pause-button").style.display = "inline-block";
+
+                    break;
+                case "pause":
+                    app.state.playing = false;
+                    app.currentFrame = app.state.playFrame;
+                    $("#play-button").style.display = "inline-block";
+                    $("#pause-button").style.display = "none";
+                    break;
+                case "next":
+                    app.currentFrame++;
+                    break;
+                case "prev":
+                    app.currentFrame--;
+                    break;
+                case "first":
+                    app.currentFrame = 0;
+                    break;
+                case "last":
+                    app.currentFrame = app.frames.length - 1;
+                    break;
+            }
+
+            if (app.currentFrame >= app.frames.length) {
+                app.currentFrame = 0;
+            } else if (app.currentFrame < 0) {
+                app.currentFrame = app.frames.length - 1;
+            }
+            
+            app.selectFrame(app.currentFrame);        
+         },
         mouseDown(evt) {
             if (evt.target.classList.contains("pixel") && app.currentColor) {
                 let info = evt.target.dataset;
@@ -527,8 +685,17 @@
             } else {
                 $(".frames").append(newli);
             }
-       },
-       renderEditor(img, pixelClass='pixel') {
+        },
+        selectFrame(num) {
+            let img = app.frames[num];
+            let out = app.renderEditor(img);
+            $("#editor").innerHTML = out;
+            app.currentFrame = num;
+            $$("img.selected").forEach(el => { el.classList.remove("selected") });
+            $(`#frame-${num}`).classList.add("selected");
+            $("#previewImg").src = $(`#frame-${num}`).src;
+        },
+        renderEditor(img, pixelClass='pixel') {
             let out = ""; // "<div class='img'>";
             for (let y=0; y<img.length; y++) {
                 // out += "<div class='row'>";
